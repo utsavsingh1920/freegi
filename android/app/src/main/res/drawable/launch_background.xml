@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Same background as Flutter Splash -->
+    <item>
+        <color android:color="#F8FCFA" />
+    </item>
+
+    <!-- Freegi logo -->
+    <item>
+        <bitmap
+            android:gravity="center"
+            android:src="@drawable/freegi_splash" />
+    </item>
+
+</layer-list>
