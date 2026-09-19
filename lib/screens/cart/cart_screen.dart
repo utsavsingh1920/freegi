@@ -261,17 +261,19 @@ class _CartScreenState extends State<CartScreen> {
             bottom: false,
             child: Column(
               children: [
+                // My Cart stays fixed/sticky at the top.
                 _buildHeader(),
+
                 Expanded(
                   child: cartItems.isEmpty
                       ? _buildEmptyCart()
                       : SingleChildScrollView(
                           physics: const BouncingScrollPhysics(),
-                          padding: EdgeInsets.fromLTRB(
+                          padding: const EdgeInsets.fromLTRB(
                             16,
                             2,
                             16,
-                            widget.showBottomNavigation ? 118 : 188,
+                            18,
                           ),
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -320,7 +322,6 @@ class _CartScreenState extends State<CartScreen> {
 
   Widget _buildHeader() {
     const textColor = Color(0xFF172321);
-    const subText = Color(0xFF71807D);
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
@@ -331,30 +332,15 @@ class _CartScreenState extends State<CartScreen> {
           alignment: Alignment.center,
           children: [
             const Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    'My Cart',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: textColor,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -0.3,
-                    ),
-                  ),
-                  SizedBox(height: 2),
-                  Text(
-                    'Review your items',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: subText,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
+              child: Text(
+                'My Cart',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: textColor,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.3,
+                ),
               ),
             ),
             if (cartItems.isNotEmpty)
@@ -1100,7 +1086,7 @@ class _CartScreenState extends State<CartScreen> {
         16,
         7,
         16,
-        widget.showBottomNavigation ? 8 : 82,
+        8,
       ),
       decoration: BoxDecoration(
         color: surface,

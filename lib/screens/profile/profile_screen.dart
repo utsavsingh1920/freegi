@@ -294,25 +294,29 @@ class _ProfileScreenState extends State<ProfileScreen> {
       extendBody: true,
       body: SafeArea(
         bottom: false,
-        child: Column(
-          children: [
-            _header(),
-            Expanded(
-              child: RefreshIndicator(
-                color: teal,
-                onRefresh: _refreshAll,
-                child: SingleChildScrollView(
-                  physics: const AlwaysScrollableScrollPhysics(
-                    parent: BouncingScrollPhysics(),
-                  ),
-                  padding: EdgeInsets.fromLTRB(
-                    18,
-                    4,
-                    18,
-                    widget.showBottomNavigation ? 32 : 112,
-                  ),
-                  child: Column(
-                    children: [
+        child: RefreshIndicator(
+          color: teal,
+          onRefresh: _refreshAll,
+          child: CustomScrollView(
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics(),
+            ),
+            slivers: [
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: const _ProfileStickyHeaderDelegate(),
+              ),
+              SliverPadding(
+                padding: EdgeInsets.fromLTRB(
+                  18,
+                  4,
+                  18,
+                  widget.showBottomNavigation ? 32 : 112,
+                ),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate(
+                    [
+
                       _profileCard(),
                       const SizedBox(height: 12),
                       ValueListenableBuilder<Set<String>>(
@@ -427,8 +431,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -437,42 +441,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // ============================================================
   // HEADER
   // ============================================================
-
-  Widget _header() {
-    return const Padding(
-      padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
-      child: SizedBox(
-        width: double.infinity,
-        height: 46,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Profile',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: text,
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -0.3,
-              ),
-            ),
-            SizedBox(height: 2),
-            Text(
-              'Manage your Freegi account',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: subText,
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   // ============================================================
   // PROFILE CARD
@@ -920,6 +888,47 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+}
+
+class _ProfileStickyHeaderDelegate
+    extends SliverPersistentHeaderDelegate {
+  const _ProfileStickyHeaderDelegate();
+
+  @override
+  double get minExtent => 54;
+
+  @override
+  double get maxExtent => 54;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return Container(
+      color: _ProfileScreenState.background,
+      child: const Center(
+        child: Text(
+          'Profile',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: _ProfileScreenState.text,
+            fontSize: 20,
+            fontWeight: FontWeight.w900,
+            letterSpacing: -0.3,
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(
+    covariant _ProfileStickyHeaderDelegate oldDelegate,
+  ) {
+    return false;
+  }
 }
 
 class _ProfileMenuItem extends StatelessWidget {

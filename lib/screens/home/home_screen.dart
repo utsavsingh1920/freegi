@@ -838,157 +838,146 @@ BorderRadius.circular(12),
 
 @override
 Widget build(BuildContext context) {
-return Scaffold(
-backgroundColor: bg,
-body: SafeArea(
-bottom: false,
-child: Column(
-children: [
-// ====================================================
-// FIXED TOP AREA
-// ====================================================
-_buildHeader(),
-
-
-        const SizedBox(height: 9),
-
-        _buildSearchBar(),
-
-        const SizedBox(height: 10),
-
-        // ====================================================
-        // SCROLL STARTS FROM HERO SECTION
-        // ====================================================
-        Expanded(
-          child: SingleChildScrollView(
-            keyboardDismissBehavior:
-                ScrollViewKeyboardDismissBehavior.onDrag,
-            physics: const BouncingScrollPhysics(),
-            padding: EdgeInsets.only(
-              bottom:
-                  widget.showBottomNavigation ? 34 : 115,
+  return Scaffold(
+    backgroundColor: bg,
+    body: SafeArea(
+      bottom: false,
+      child: CustomScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          // ====================================================
+          // FULL HEADER -> COMPACT STICKY HEADER
+          // ====================================================
+          // ====================================================
+          // FIXED HOME HEADER
+          // Same height before and after scrolling.
+          // Search, hero banner and the rest of Home scroll normally.
+          // SliverAppBar is used instead of SliverPersistentHeader to
+          // avoid invalid SliverGeometry on some devices.
+          // ====================================================
+          SliverAppBar(
+            pinned: true,
+            floating: false,
+            snap: false,
+            automaticallyImplyLeading: false,
+            toolbarHeight: 60,
+            collapsedHeight: 60,
+            expandedHeight: 60,
+            elevation: 0,
+            scrolledUnderElevation: 0.8,
+            shadowColor: Colors.black12,
+            backgroundColor: bg,
+            surfaceTintColor: Colors.transparent,
+            titleSpacing: 0,
+            title: SizedBox(
+              height: 60,
+              child: _buildHeader(),
             ),
+          ),
+
+          // Search bar is NOT sticky. It scrolls with Home content.
+          SliverToBoxAdapter(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _buildHeroSlider(),
-
-                const SizedBox(height: 20),
-
-                _buildSectionTitle(
-                  title: 'Shop by Category',
-                  onTap: _openCategories,
-                ),
-
-                const SizedBox(height: 10),
-
-                _buildCategories(),
-
-                const SizedBox(height: 20),
-
-                _buildSectionTitle(
-                  title: "Today's Best Deals",
-                  onTap: _openCategories,
-                ),
-
-                const SizedBox(height: 10),
-
-                _buildProducts(
-                  products: popularProducts,
-                  showDiscount: true,
-                ),
-
-                const SizedBox(height: 20),
-
-                _buildOfferCard(),
-
-                const SizedBox(height: 20),
-
-                _buildSectionTitle(
-                  title: 'Daily Essentials',
-                  onTap: _openCategories,
-                ),
-
-                const SizedBox(height: 10),
-
-                _buildProducts(
-                  products: dailyEssentials,
-                  showDiscount: true,
-                ),
-
-                const SizedBox(height: 20),
-
-                _buildFreshBanner(),
-
-                const SizedBox(height: 20),
-
-                _buildSectionTitle(
-                  title: 'Top Picks for You',
-                  onTap: _openCategories,
-                ),
-
-                const SizedBox(height: 10),
-
-                _buildProducts(
-                  products: topPicks,
-                  showDiscount: true,
-                ),
-
-                const SizedBox(height: 20),
-
-                _buildMiniOfferBanner(),
-
-                const SizedBox(height: 20),
-
-                _buildSectionTitle(
-                  title: 'Breakfast & Bakery',
-                  onTap: _openCategories,
-                ),
-
-                const SizedBox(height: 10),
-
-                _buildProducts(
-                  products: breakfastProducts,
-                ),
-
-                const SizedBox(height: 20),
-
-                _buildSectionTitle(
-                  title: 'Recommended for You',
-                  onTap: _openCategories,
-                ),
-
-                const SizedBox(height: 10),
-
-                _buildProducts(
-                  products:
-                      popularProducts.reversed.toList(),
-                  showDiscount: true,
-                ),
-
-                const SizedBox(height: 22),
-
-                _buildDeliveryBenefits(),
-
-                const SizedBox(height: 18),
-
-                _buildEndMessage(),
-
+                const SizedBox(height: 9),
+                _buildSearchBar(),
                 const SizedBox(height: 10),
               ],
             ),
           ),
-        ),
-      ],
+
+          // ====================================================
+          // ALL EXISTING HOME CONTENT SCROLLS NORMALLY
+          // ====================================================
+          SliverToBoxAdapter(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildHeroSlider(),
+                const SizedBox(height: 20),
+                _buildSectionTitle(
+                  title: 'Shop by Category',
+                  onTap: _openCategories,
+                ),
+                const SizedBox(height: 10),
+                _buildCategories(),
+                const SizedBox(height: 20),
+                _buildSectionTitle(
+                  title: "Today's Best Deals",
+                  onTap: _openCategories,
+                ),
+                const SizedBox(height: 10),
+                _buildProducts(
+                  products: popularProducts,
+                  showDiscount: true,
+                ),
+                const SizedBox(height: 20),
+                _buildOfferCard(),
+                const SizedBox(height: 20),
+                _buildSectionTitle(
+                  title: 'Daily Essentials',
+                  onTap: _openCategories,
+                ),
+                const SizedBox(height: 10),
+                _buildProducts(
+                  products: dailyEssentials,
+                  showDiscount: true,
+                ),
+                const SizedBox(height: 20),
+                _buildFreshBanner(),
+                const SizedBox(height: 20),
+                _buildSectionTitle(
+                  title: 'Top Picks for You',
+                  onTap: _openCategories,
+                ),
+                const SizedBox(height: 10),
+                _buildProducts(
+                  products: topPicks,
+                  showDiscount: true,
+                ),
+                const SizedBox(height: 20),
+                _buildMiniOfferBanner(),
+                const SizedBox(height: 20),
+                _buildSectionTitle(
+                  title: 'Breakfast & Bakery',
+                  onTap: _openCategories,
+                ),
+                const SizedBox(height: 10),
+                _buildProducts(
+                  products: breakfastProducts,
+                ),
+                const SizedBox(height: 20),
+                _buildSectionTitle(
+                  title: 'Recommended for You',
+                  onTap: _openCategories,
+                ),
+                const SizedBox(height: 10),
+                _buildProducts(
+                  products: popularProducts.reversed.toList(),
+                  showDiscount: true,
+                ),
+                const SizedBox(height: 22),
+                _buildDeliveryBenefits(),
+                const SizedBox(height: 18),
+                _buildEndMessage(),
+
+                // Keeps the final Home content clear of the fixed navbar.
+                SizedBox(
+                  height: widget.showBottomNavigation ? 24 : 115,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     ),
-  ),
 
-  // MainNavigationScreen owns the shared navbar when this is false.
-  bottomNavigationBar: widget.showBottomNavigation
-      ? _buildBottomNavigation()
-      : null,
-);
-
+    // MainNavigationScreen owns the shared navbar when this is false.
+    bottomNavigationBar: widget.showBottomNavigation
+        ? _buildBottomNavigation()
+        : null,
+  );
 }
 
 // ============================================================
@@ -1134,6 +1123,10 @@ children: [
 );
 
 }
+
+// ============================================================
+// HEADER ACTION BUTTONS
+// ============================================================
 
 Widget _headerButton({
 required IconData icon,

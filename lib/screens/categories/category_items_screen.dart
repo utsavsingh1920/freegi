@@ -359,162 +359,81 @@ class _CategoryItemsScreenState
             final visibleProducts = filteredProducts;
 
             return Scaffold(
-      backgroundColor: bg,
-      body: SafeArea(
-        child: Column(
-          children: [
-            _buildHeader(
-              visibleProducts.length,
-            ),
-
-            const SizedBox(height: 14),
-
-            _buildSearch(),
-
-            const SizedBox(height: 14),
-
-            _buildFilterChips(),
-
-            const SizedBox(height: 12),
-
-            Expanded(
-              child: visibleProducts.isEmpty
-                  ? _buildEmptyState()
-                  : ListView.separated(
-                      physics:
-                          const BouncingScrollPhysics(),
-                      padding:
-                          const EdgeInsets.fromLTRB(
-                        16,
-                        0,
-                        16,
-                        28,
+              backgroundColor: bg,
+              body: SafeArea(
+                child: CustomScrollView(
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  physics: const BouncingScrollPhysics(),
+                  slivers: [
+                    // Header stays sticky.
+                    SliverPersistentHeader(
+                      pinned: true,
+                      delegate: _CategoryItemsStickyHeaderDelegate(
+                        categoryName: widget.categoryName,
+                        count: visibleProducts.length,
+                        onBack: () => Navigator.pop(context),
                       ),
-                      itemCount:
-                          visibleProducts.length,
-                      separatorBuilder: (_, _) =>
-                          const SizedBox(height: 10),
-                      itemBuilder:
-                          (context, index) {
-                        final product =
-                            visibleProducts[index];
-
-                        return _buildProductRow(
-                          product,
-                        );
-                      },
                     ),
-            ),
-          ],
-        ),
-      ),
+
+                    // Search scrolls away.
+                    SliverToBoxAdapter(
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 14),
+                          _buildSearch(),
+                          const SizedBox(height: 14),
+                        ],
+                      ),
+                    ),
+
+                    // Filters scroll away with the page.
+                    SliverToBoxAdapter(
+                      child: Column(
+                        children: [
+                          _buildFilterChips(),
+                          const SizedBox(height: 12),
+                        ],
+                      ),
+                    ),
+
+                    if (visibleProducts.isEmpty)
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: _buildEmptyState(),
+                      )
+                    else
+                      SliverPadding(
+                        padding: const EdgeInsets.fromLTRB(
+                          16,
+                          0,
+                          16,
+                          28,
+                        ),
+                        sliver: SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              if (index.isOdd) {
+                                return const SizedBox(height: 10);
+                              }
+
+                              final productIndex = index ~/ 2;
+                              return _buildProductRow(
+                                visibleProducts[productIndex],
+                              );
+                            },
+                            childCount:
+                                visibleProducts.length * 2 - 1,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
+              ),
             );
           },
         );
       },
-    );
-  }
-
-  // ============================================================
-  // HEADER
-  // ============================================================
-
-  Widget _buildHeader(int count) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(
-        16,
-        14,
-        16,
-        0,
-      ),
-      child: Row(
-        children: [
-          InkWell(
-            onTap: () {
-              Navigator.pop(context);
-            },
-            borderRadius: BorderRadius.circular(13),
-            child: Container(
-              width: 41,
-              height: 41,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius:
-                    BorderRadius.circular(13),
-                border: Border.all(
-                  color: border,
-                ),
-              ),
-              child: const Icon(
-                Icons.arrow_back_ios_new_rounded,
-                color: darkText,
-                size: 17,
-              ),
-            ),
-          ),
-
-          const SizedBox(width: 13),
-
-          Expanded(
-            child: Column(
-              crossAxisAlignment:
-                  CrossAxisAlignment.start,
-              children: [
-                Text(
-                  widget.categoryName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: darkText,
-                    fontSize: 21,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -0.4,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  '$count products available',
-                  style: const TextStyle(
-                    color: subText,
-                    fontSize: 9.5,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 9,
-              vertical: 6,
-            ),
-            decoration: BoxDecoration(
-              color: lightMint,
-              borderRadius:
-                  BorderRadius.circular(20),
-            ),
-            child: const Row(
-              children: [
-                Icon(
-                  Icons.eco_rounded,
-                  color: teal,
-                  size: 14,
-                ),
-                SizedBox(width: 4),
-                Text(
-                  'Fresh',
-                  style: TextStyle(
-                    color: darkTeal,
-                    fontSize: 9,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 
@@ -1024,3 +943,142 @@ class _CategoryItemsScreenState
     );
   }
 }
+
+// ============================================================
+// CATEGORY ITEMS STICKY HEADER
+// ============================================================
+
+class _CategoryItemsStickyHeaderDelegate
+    extends SliverPersistentHeaderDelegate {
+  final String categoryName;
+  final int count;
+  final VoidCallback onBack;
+
+  const _CategoryItemsStickyHeaderDelegate({
+    required this.categoryName,
+    required this.count,
+    required this.onBack,
+  });
+
+  @override
+  double get minExtent => 69;
+
+  @override
+  double get maxExtent => 69;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    const teal = Color(0xFF00AFA8);
+    const darkTeal = Color(0xFF08756E);
+    const darkText = Color(0xFF172321);
+    const subText = Color(0xFF73817E);
+    const bg = Color(0xFFF8FCFA);
+    const border = Color(0xFFE1EBE9);
+    const lightMint = Color(0xFFE5F8F4);
+
+    return Container(
+      color: bg,
+      padding: const EdgeInsets.fromLTRB(
+        16,
+        14,
+        16,
+        0,
+      ),
+      child: Row(
+        children: [
+          InkWell(
+            onTap: onBack,
+            borderRadius: BorderRadius.circular(13),
+            child: Container(
+              width: 41,
+              height: 41,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(13),
+                border: Border.all(
+                  color: border,
+                ),
+              ),
+              child: const Icon(
+                Icons.arrow_back_ios_new_rounded,
+                color: darkText,
+                size: 17,
+              ),
+            ),
+          ),
+          const SizedBox(width: 13),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  categoryName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: darkText,
+                    fontSize: 21,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.4,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  '$count products available',
+                  style: const TextStyle(
+                    color: subText,
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 9,
+              vertical: 6,
+            ),
+            decoration: BoxDecoration(
+              color: lightMint,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Row(
+              children: [
+                Icon(
+                  Icons.eco_rounded,
+                  color: teal,
+                  size: 14,
+                ),
+                SizedBox(width: 4),
+                Text(
+                  'Fresh',
+                  style: TextStyle(
+                    color: darkTeal,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(
+    covariant _CategoryItemsStickyHeaderDelegate oldDelegate,
+  ) {
+    return oldDelegate.categoryName != categoryName ||
+        oldDelegate.count != count ||
+        oldDelegate.onBack != onBack;
+  }
+}
+

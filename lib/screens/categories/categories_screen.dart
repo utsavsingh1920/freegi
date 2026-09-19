@@ -232,7 +232,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
 
     return Scaffold(
       backgroundColor: background,
-      extendBody: !keyboardOpen,
+      extendBody: false,
       resizeToAvoidBottomInset: true,
       body: SafeArea(
         bottom: false,
@@ -241,122 +241,136 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
           onTap: () {
             FocusManager.instance.primaryFocus?.unfocus();
           },
-          child: Column(
-            children: [
-              // FIXED HEADER
-              _buildHeader(),
+          child: CustomScrollView(
+            keyboardDismissBehavior:
+                ScrollViewKeyboardDismissBehavior.onDrag,
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              // Categories is the only header text.
+              // It stays pinned at the top while everything below scrolls.
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: const _CategoriesStickyHeaderDelegate(),
+              ),
 
-              const SizedBox(height: 10),
+              // Search scrolls away.
+              SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    const SizedBox(height: 10),
+                    _buildSearchBar(),
+                    const SizedBox(height: 12),
+                  ],
+                ),
+              ),
 
-              // FIXED SEARCH BAR
-              _buildSearchBar(),
+              // Existing hero/banner scrolls away.
+              SliverToBoxAdapter(
+                child: _buildHeroBanner(),
+              ),
 
-              const SizedBox(height: 12),
+              const SliverToBoxAdapter(
+                child: SizedBox(height: 16),
+              ),
 
-              // ONLY THIS PART SCROLLS
-              Expanded(
-                child: SingleChildScrollView(
-                  keyboardDismissBehavior:
-                      ScrollViewKeyboardDismissBehavior.onDrag,
-                  physics: const BouncingScrollPhysics(),
-                  padding: EdgeInsets.only(
-                    bottom: widget.showBottomNavigation
-                        ? 32
-                        : keyboardOpen
-                            ? 24
-                            : 112,
+              if (visibleCategories.isEmpty)
+                SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 360,
+                    child: _buildEmptyState(),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // HERO SCROLLS WITH CATEGORIES
-                      _buildHeroBanner(),
-
-                      const SizedBox(height: 16),
-
-                      if (visibleCategories.isEmpty)
-                        SizedBox(
-                          height: 360,
-                          child: _buildEmptyState(),
-                        )
-                      else ...[
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                          ),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Text(
-                                  'All Categories',
-                                  style: TextStyle(
-                                    color: const Color(0xFF172321),
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: -0.25,
-                                  ),
-                                ),
-                              ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 5,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFE5F8F4),
-                                  borderRadius:
-                                      BorderRadius.circular(20),
-                                ),
-                                child: Text(
-                                  '${visibleCategories.length} Categories',
-                                  style: const TextStyle(
-                                    color: teal,
-                                    fontSize: 8.5,
-                                    fontWeight: FontWeight.w800,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-
-                        const SizedBox(height: 14),
-
-                        Padding(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                          ),
-                          child: GridView.builder(
-                            shrinkWrap: true,
-                            physics:
-                                const NeverScrollableScrollPhysics(),
-                            itemCount: visibleCategories.length,
-                            gridDelegate:
-                                const SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 4,
-                              crossAxisSpacing: 9,
-                              mainAxisSpacing: 12,
-                              childAspectRatio: 0.74,
+                )
+              else ...[
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                    ),
+                    child: Row(
+                      children: [
+                        const Expanded(
+                          child: Text(
+                            'All Categories',
+                            style: TextStyle(
+                              color: Color(0xFF172321),
+                              fontSize: 18,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -0.25,
                             ),
-                            itemBuilder: (context, index) {
-                              return _categoryItem(
-                                visibleCategories[index],
-                              );
-                            },
                           ),
                         ),
-
-                        const SizedBox(height: 20),
-
-                        Padding(
+                        Container(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
+                            horizontal: 10,
+                            vertical: 5,
                           ),
-                          child: _buildBottomInfo(),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFE5F8F4),
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Text(
+                            '${visibleCategories.length} Categories',
+                            style: const TextStyle(
+                              color: teal,
+                              fontSize: 8.5,
+                              fontWeight: FontWeight.w800,
+                            ),
+                          ),
                         ),
                       ],
-                    ],
+                    ),
                   ),
+                ),
+
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: 14),
+                ),
+
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                  ),
+                  sliver: SliverGrid(
+                    delegate: SliverChildBuilderDelegate(
+                      (context, index) {
+                        return _categoryItem(
+                          visibleCategories[index],
+                        );
+                      },
+                      childCount: visibleCategories.length,
+                    ),
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 4,
+                      crossAxisSpacing: 9,
+                      mainAxisSpacing: 12,
+                      childAspectRatio: 0.74,
+                    ),
+                  ),
+                ),
+
+                const SliverToBoxAdapter(
+                  child: SizedBox(height: 20),
+                ),
+
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                    ),
+                    child: _buildBottomInfo(),
+                  ),
+                ),
+              ],
+
+              // Safe space above the app's fixed bottom navigation.
+              SliverToBoxAdapter(
+                child: SizedBox(
+                  height: widget.showBottomNavigation
+                      ? 32
+                      : keyboardOpen
+                          ? 24
+                          : 112,
                 ),
               ),
             ],
@@ -365,50 +379,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
       ),
     );
   }
-
-  // ============================================================
-  // HEADER
-  // ============================================================
-
-  Widget _buildHeader() {
-    const textColor = Color(0xFF172321);
-    const subText = Color(0xFF71807D);
-
-    return const Padding(
-      padding: EdgeInsets.fromLTRB(16, 8, 16, 0),
-      child: SizedBox(
-        width: double.infinity,
-        height: 46,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Categories',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: textColor,
-                fontSize: 20,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -0.3,
-              ),
-            ),
-            SizedBox(height: 2),
-            Text(
-              'Everything you need',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: subText,
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
+  
   // ============================================================
   // SEARCH BAR - COMPACT
   // ============================================================
@@ -877,5 +848,49 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         ),
       ),
     );
+  }
+}
+
+// ============================================================
+// CATEGORIES STICKY HEADER
+// ============================================================
+
+class _CategoriesStickyHeaderDelegate
+    extends SliverPersistentHeaderDelegate {
+  const _CategoriesStickyHeaderDelegate();
+
+  @override
+  double get minExtent => 54;
+
+  @override
+  double get maxExtent => 54;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return Container(
+      color: const Color(0xFFF8FCFA),
+      alignment: Alignment.center,
+      child: const Text(
+        'Categories',
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          color: Color(0xFF172321),
+          fontSize: 20,
+          fontWeight: FontWeight.w900,
+          letterSpacing: -0.3,
+        ),
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(
+    covariant _CategoriesStickyHeaderDelegate oldDelegate,
+  ) {
+    return false;
   }
 }
